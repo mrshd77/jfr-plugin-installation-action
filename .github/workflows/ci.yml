@@ -1,38 +1,26 @@
-name: jfr-plugin-installation-action CI
+name: CI
 on: [push]
 jobs:
-  syntax-check:
-    runs-on: ubuntu-latest
-    name: syntax-check
-    steps:
-      - uses: actions/checkout@v2
-      - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@master      
-  jenkins-runtime-pipeline:
-    # Run all the actions in the on demand VM.
-    needs: syntax-check
+  jfr-runtime-action-pipeline:
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]    
-    runs-on: ${{ matrix.os }}
-    name: jenkins-runtime-pipeline-test
+        os: [ ubuntu-latest, macOS-latest, windows-latest ]
+    runs-on: ${{matrix.os}}
+    name: jfr-runtime-action-pipeline
     steps:
       - uses: actions/checkout@v2
       - name : Setup Jenkins
         uses:
-          jenkinsci/jfr-setup-action@master
+          jenkinsci/jfr-runtime-action@master
       - name: Jenkins plugins download
-        id: jenkins_plugins_download
         uses:
-          ./
+          jenkinsci/jfr-plugin-installation-action@master
         with:
           pluginstxt: plugins.txt
       - name: Run Jenkins pipeline
-        id: run_jenkins_pipeline
         uses:
           jenkinsci/jfr-runtime-action@master
         with:
           command: run
           jenkinsfile: Jenkinsfile
-          jcasc: jcasc.yml
-          initHook: groovy.init.d
+          
